@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>All Comments</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <nav>
+        <a href="/">Home</a>
+    </nav>
+    <div class="container">
+        <h1>All Comments</h1>
+
+        {% if sentiment_results %}
+        <table>
+            <thead>
+                <tr>
+                    <th>Comment</th>
+                    <th>Likes</th>
+                    <th>Sentiment</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for result in sentiment_results %}
+            <tr>
+                <td>{{ result.comment }}</td>
+                <td>{{ result.likes }}</td>
+                <td>{{ result.sentiment }}</td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <p>No comments to display.</p>
+        {% endif %}
+
+        <h2>Sentiment Analysis Statistics</h2>
+        <div class="statistics">
+            <p><strong>Positive Comments:</strong> {{ positive_count }} ({{ positive_percentage }}%)</p>
+            <p><strong>Negative Comments:</strong> {{ negative_count }} ({{ negative_percentage }}%)</p>
+        </div>
+
+        <h2>Sentiment Distribution Chart</h2>
+        {% if chart_url %}
+            <div class="chart-container">
+                <img src="data:image/png;base64,{{ chart_url }}" alt="Sentiment Distribution Pie Chart">
+            </div>
+        {% else %}
+            <p>No comments to display in chart.</p>
+        {% endif %}
+        <h2>Sentiment Report</h2>
+        <div class="report-box">
+            <p>{{ sentiment_report }}</p>
+        </div>
+        <h2>Most Frequent Words</h2>
+        {% if wordcloud_url %}
+        <div class="wordcloud-container">
+            <img src="data:image/png;base64,{{ wordcloud_url }}" alt="Word Cloud" />
+        </div>
+        {% else %}
+        <p>No words to display in word cloud.</p>
+        {% endif %}
+
+    </div>
+   
+</body>
+</html>

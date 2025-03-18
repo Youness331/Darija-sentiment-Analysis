@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scrape and Analyze</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+
+<nav>
+    <a href="/">Home</a>
+</nav>
+
+<div class="container">
+    <h1>Scrape Articles Based on Keywords</h1>
+    <form action="/results" method="post">
+        <label for="keyword">Keyword:</label>
+        <input type="text" id="keyword" name="keyword" required>
+
+        <label for="days">Date Range (Days):</label>
+        <input type="number" id="days" name="days" required>
+
+        <input type="submit" value="Scrape Articles">
+    </form>
+</div>
+
+<footer>
+    <p>&copy; 2024 Sentiment Analysis Application</p>
+</footer>
+
+</body>
+</html>
