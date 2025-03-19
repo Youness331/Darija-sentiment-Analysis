@@ -31,139 +31,86 @@ import nltk
 nltk.download('punkt')
 nltk.download('stopwords')
 
-
+arabic_to_english_day = {
+        'السبت': 'Saturday', 'الأحد': 'Sunday', 'الإثنين': 'Monday',
+        'الثلاثاء': 'Tuesday', 'الأربعاء': 'Wednesday', 'الخميس': 'Thursday', 'الجمعة': 'Friday'
+    }
+arabic_to_english_month = {
+        'يناير': 'January', 'فبراير': 'February', 'مارس': 'March', 'أبريل': 'April',
+        'مايو': 'May', 'يونيو': 'June', 'يوليوز': 'July', 'غشت': 'August', 'شتنبر': 'September',
+        'أكتوبر': 'October', 'نونبر': 'November', 'دجنبر': 'December'
+    }
 
 def dynamic_scraper(interval_days, key_name, url):
-    # Calculate the date interval based on the current time
+    # Calculate the date interval
     end_date = datetime.now()
-    start_date = end_date - timedelta(days=interval_days)
-
-    # Arabic day and month translation dictionaries
-    arabic_to_english_day = {
-        'السبت': 'Saturday',
-        'الأحد': 'Sunday',
-        'الإثنين': 'Monday',
-        'الثلاثاء': 'Tuesday',
-        'الأربعاء': 'Wednesday',
-        'الخميس': 'Thursday',
-        'الجمعة': 'Friday'
-    }
-    
-    arabic_to_english_month = {
-        'يناير': 'January',
-        'فبراير': 'February',
-        'مارس': 'March',
-        'أبريل': 'April',
-        'مايو': 'May',
-        'يونيو': 'June',
-        'يوليوز': 'July',
-        'غشت': 'August',
-        'شتنبر': 'September',
-        'أكتوبر': 'October',
-        'نونبر': 'November',
-        'دجنبر': 'December'
-    }
-
-    # Initialize the WebDriver with the options
-    chrome_install = ChromeDriverManager().install()
-    folder = os.path.dirname(chrome_install)
-    chromedriver_path = os.path.join(folder, "chromedriver.exe")
-    service = ChromeService(chromedriver_path)
-    driver = webdriver.Chrome(service=service)
+    start_date = end_date - timedelta(days=interval_days)    
+    # Initialize WebDriver
+    chrome_service = ChromeService(ChromeDriverManager().install())
+    driver = webdriver.Chrome(service=chrome_service)
     driver.get(url)
-    time.sleep(5)  # Wait for the page to load
-
-    # Initialize a list to hold the scraped data and a set to track unique entries
+    time.sleep(5)  # Allow page to load
+    
     data = []
     seen_data = set()
     last_height = driver.execute_script("return document.body.scrollHeight")
     finished_scraping = False  
     
     while not finished_scraping:
-        # Get the current page source
-        page_source = driver.page_source
-        soup = BeautifulSoup(page_source, 'html.parser')
-
-        # Find all <h3 class="card-title">, <small class="text-muted time">, and <a class="stretched-link">
-        titles = soup.find_all('h3', class_='card-title')
-        times = soup.find_all('small', class_='text-muted time')
-        links = soup.find_all('a', class_='stretched-link')
-
-        # Check if the length of titles, times, and links are the same to match pairs
+        titles = driver.find_elements(By.CSS_SELECTOR, 'h3.card-title')
+        times = driver.find_elements(By.CSS_SELECTOR, 'small.text-muted.time')
+        links = driver.find_elements(By.CSS_SELECTOR, 'a.stretched-link')
+        
         if len(titles) == len(times) == len(links):
             for i in range(len(titles)):
-                title = titles[i].get_text(strip=True)
-                time_str = times[i].get_text(strip=True)
-                link = links[i]['href']  # Extract the href attribute from the <a> tag
+                title = titles[i].text.strip()
+                time_str = times[i].text.strip()
+                link = links[i].get_attribute('href')
                 
-                # Replace Arabic day and month names with English equivalents
                 for arabic_day, english_day in arabic_to_english_day.items():
                     time_str = time_str.replace(arabic_day, english_day)
-                    
                 for arabic_month, english_month in arabic_to_english_month.items():
                     time_str = time_str.replace(arabic_month, english_month)
-
-                # Convert the time string to a datetime object
+                
                 try:
                     date_obj = datetime.strptime(time_str, '%A %d %B %Y - %H:%M')
-                except ValueError as e:
-                    print(f"Error parsing date: {e}")
+                except ValueError:
                     continue
-
-                # Create a unique key for each entry
+                
                 unique_key = (date_obj, title)
-
-                # Check if the post date is within the desired interval, contains the key_name, and is not a duplicate
                 if start_date <= date_obj <= end_date and key_name in title and unique_key not in seen_data:
-                    data.append({
-                        'date': time_str,
-                        'title': title,
-                        'link': link  # Add the link to the data
-                    })
-                    seen_data.add(unique_key)  # Track this entry to prevent duplicates
-
-        # Stop scrolling if the last time is less than or equal to the start_date
-        if len(times) > 0:
-            last_time_str = times[-1].get_text(strip=True)
+                    data.append({'date': time_str, 'title': title, 'link': link})
+                    seen_data.add(unique_key)
+        
+        if times:
+            last_time_str = times[-1].text.strip()
             for arabic_day, english_day in arabic_to_english_day.items():
                 last_time_str = last_time_str.replace(arabic_day, english_day)
-                
             for arabic_month, english_month in arabic_to_english_month.items():
                 last_time_str = last_time_str.replace(arabic_month, english_month)
-
+            
             last_date_obj = datetime.strptime(last_time_str, '%A %d %B %Y - %H:%M')
             if last_date_obj <= start_date:
-                print(f"Stopping scraping: last date ({last_date_obj}) is older than start date ({start_date}).")
                 finished_scraping = True
-
-        # Scroll to the bottom of the page to load more content
-        driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
-        time.sleep(2)  # Wait for the new content to load
         
-        # Scroll up slightly to trigger more loading
-        driver.execute_script("window.scrollTo(0, document.body.scrollHeight - 1000);")
-        time.sleep(2)  # Shorter wait time before scrolling back down
-
-        # Scroll back to the bottom
         driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
         time.sleep(2)
-
+        driver.execute_script("window.scrollTo(0, document.body.scrollHeight - 1000);")
+        time.sleep(2)
+        driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+        time.sleep(2)
+        
         new_height = driver.execute_script("return document.body.scrollHeight")
-
-        # Break the loop if no new content is loaded
         if new_height == last_height:
-            print(f"Stopping scraping: no new content loaded after scrolling.")
             finished_scraping = True
         last_height = new_height
-
         time.sleep(5)
-
+    
     driver.quit()
-
-    # Only append the data after the full scraping process
+    
     if data:
         df = pd.DataFrame(data)
-        df.to_csv(key_name + '_scraped_data.csv', index=False)
+        df.to_csv(f'{key_name}_scraped_data.csv', index=False)
         return df
     else:
         print("No data found within the specified date range")

@@ -1,5 +1,8 @@
 from flask import Flask, render_template, request
 import pandas as pd
+import urllib.parse
+from urllib.parse import unquote
+
 from datetime import datetime, timedelta
 import os
 import matplotlib
@@ -49,7 +52,7 @@ tokenizer = BertTokenizer.from_pretrained("SI2M-Lab/DarijaBERT")
 model = BertForSequenceClassification.from_pretrained("SI2M-Lab/DarijaBERT", num_labels=2)
 
 # Load the weights from the .safetensors file
-safetensors_path = r"C:\Users\dell\Desktop\pfa\test\models\model\model.safetensors"
+safetensors_path = r"C:\Users\dell\Desktop\pfa\app\models\model\model.safetensors"
 state_dict = load_file(safetensors_path)
 model.load_state_dict(state_dict)
 
@@ -186,10 +189,10 @@ def index():
 def results():
     key_name = request.form['keyword']
     interval_days = int(request.form['days'])
-    url = 'https://www.hespress.com/all?most_viewed'  # URL to scrape from
+    url = 'https://www.hespress.com/all'  # URL to scrape from
     
     df = dynamic_scraper(interval_days, key_name, url)
-    
+    print(df)
     if df is not None:
         # Show the scraped data on the results page
         return render_template('results.html', data=df.to_dict(orient='records'))
@@ -275,8 +278,9 @@ def all_comments():
 
 @app.route('/analyze_comments/<path:article_link>', methods=['GET'])
 def analyze_comments(article_link):
+    article_link = unquote(article_link)  # Decode the URL-encoded article link
+    print("Decoded Article Link:", article_link) 
     comments = scrape_comments(article_link)  # Scrape comments
-    
     # Debugging: Check if comments are scraped
     print("Scraped Comments:", comments)
     

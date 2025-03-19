@@ -26,7 +26,7 @@
             <td><a href="{{ article.link }}" class="article-link" target="_blank">{{ article.title }}</a></td>
             <!-- Displaying the date in Arabic -->
             <td>{{ article.date }}</td>
-            <td><a href="{{ url_for('analyze_comments', article_link=article.link) }}" class="btn">Analyse Comments</a></td>
+            <td><a href="{{ url_for('analyze_comments', article_link=article.link | urlencode) }}" class="btn">Analyse Comments</a></td>
         </tr>
         {% endfor %}
     </table>
