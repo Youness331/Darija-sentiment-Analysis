@@ -1,0 +1,17 @@
+Flask
+pandas
+matplotlib
+selenium
+webdriver-manager
+beautifulsoup4
+arabic-reshaper
+python-bidi
+wordcloud
+nltk
+torch
+transformers
+safetensors
+google-generativeai
+requests
+emoji
+gunicorn
