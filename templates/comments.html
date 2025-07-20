@@ -25,7 +25,7 @@
             <tr>
                 <td>{{ result.comment }}</td>
                 <td>{{ result.likes }}</td>
-                <td>{{ result.sentiment }}</td>
+                <td {% if result.sentiment == "positive" %}style="color: green;"{% endif %}>{{ result.sentiment }}</td>            </tr>
             </tr>
             {% endfor %}
         </table>

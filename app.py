@@ -2,16 +2,18 @@ from flask import Flask, render_template, request
 import pandas as pd
 import urllib.parse
 from urllib.parse import unquote
-
-from datetime import datetime, timedelta
+from dotenv import load_dotenv
 import os
 import matplotlib
 matplotlib.use('Agg')
+import matplotlib.pyplot as plt
+from datetime import datetime, timedelta
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service as ChromeService
 from webdriver_manager.chrome import ChromeDriverManager
 from bs4 import BeautifulSoup
 import time
+from selenium.webdriver.common.by import By
 from collections import Counter
 import re
 import io
@@ -19,26 +21,25 @@ import base64
 import arabic_reshaper
 from bidi.algorithm import get_display
 from wordcloud import WordCloud
-import matplotlib.pyplot as plt
 import csv
-import re
 import nltk
-nltk.download('punkt')
-nltk.download('stopwords')
-from transformers import AutoTokenizer, AutoModelForSequenceClassification
+from transformers import BertTokenizer, BertForSequenceClassification
 import torch
 import google.generativeai as genai
-import os
-from transformers import BertTokenizer, BertForSequenceClassification
 from safetensors.torch import load_file
+import requests
+
+# Load environment variables from .env file
+load_dotenv()
+
+# Download required NLTK data
+nltk.download('punkt')
+nltk.download('stopwords')
 
 from package import dynamic_scraper
 from package import scrape_comments
 
 app = Flask(__name__)
-import requests
-
-
 
 # Load stop words from the CSV file
 stop_words_df = pd.read_csv('Stop_words.csv', header=None, encoding='utf-16')
@@ -114,7 +115,7 @@ def load_stopwords(file_path):
 
 
 # Configure the Gemini API
-genai.configure(api_key="AIzaSyAMyc31hIwWCwN34IY8ahdhZgYCd50XJ14")
+genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
 
 # Function to generate a sentiment report via Gemini-like API
 def generate_report(positive_percentage, negative_percentage):
@@ -132,16 +133,6 @@ def generate_report(positive_percentage, negative_percentage):
     except Exception as e:
         print(f"Error generating report: {e}")
         return "Could not generate the report due to an API error."
-
-# Function to load stopwords from Stop_words.csv
-def load_stopwords(file_path):
-    #empty set
-    stopwords = set()
-    with open(file_path, 'r', encoding='utf-16') as file:
-        reader = csv.reader(file)
-        for row in reader:
-            stopwords.add(row[0].strip())
-    return stopwords
 
 # Function to clean and tokenize the text, removing stopwords
 def clean_and_tokenize_comments(comments, stop_words):

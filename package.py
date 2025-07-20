@@ -1,4 +1,6 @@
 import pandas as pd
+from selenium.webdriver.common.by import By
+
 from datetime import datetime, timedelta
 import os
 import matplotlib

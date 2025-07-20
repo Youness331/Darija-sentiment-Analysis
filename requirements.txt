@@ -15,4 +15,8 @@ google-generativeai
 requests
 emoji
 gunicorn
-urllib
+scikit-learn
+keras
+tensorflow
+joblib
+python-dotenv
