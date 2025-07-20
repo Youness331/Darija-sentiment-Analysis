@@ -228,31 +228,116 @@ def all_comments():
     print(f"Positive Count: {positive_count}, Negative Count: {negative_count}")
     print(f"Positive Percentage: {positive_percentage}%, Negative Percentage: {negative_percentage}%")
 
-    # Generate the sentiment distribution pie chart (ensure total_comments > 0 to avoid NaN)
+    # Generate multiple visualizations
+    charts = {}
+    
     if total_comments > 0:
+        # 1. Sentiment Distribution Pie Chart
         labels = ['Positive', 'Negative']
         sizes = [positive_percentage, negative_percentage]
-        colors = ['#66b3ff', '#ff9999']
+        colors = ['#4CAF50', '#f44336']
         
-        # Create pie chart
-        plt.figure(figsize=(6, 6))
-        plt.pie(sizes, labels=labels, autopct='%1.1f%%', startangle=90, colors=colors)
-        plt.axis('equal')  # Equal aspect ratio ensures that pie is drawn as a circle.
-
-        # Save the chart to a BytesIO object and convert it to a base64 string
+        plt.figure(figsize=(8, 6))
+        plt.pie(sizes, labels=labels, autopct='%1.1f%%', startangle=90, colors=colors,
+                explode=(0.05, 0.05), shadow=True)
+        plt.title('Sentiment Distribution', fontsize=16, fontweight='bold')
+        
         img = io.BytesIO()
-        plt.savefig(img, format='png')
+        plt.savefig(img, format='png', bbox_inches='tight', dpi=150)
         img.seek(0)
-        chart_url = base64.b64encode(img.getvalue()).decode('utf8')
+        charts['pie_chart'] = base64.b64encode(img.getvalue()).decode('utf8')
         plt.close()
-    else:
-        chart_url = None  # If no comments, no chart is generated
+        
+        # 2. Sentiment Comparison Bar Chart
+        plt.figure(figsize=(10, 6))
+        sentiments = ['Positive', 'Negative']
+        counts = [positive_count, negative_count]
+        bars = plt.bar(sentiments, counts, color=['#4CAF50', '#f44336'], alpha=0.8)
+        
+        # Add value labels on bars
+        for bar, count in zip(bars, counts):
+            plt.text(bar.get_x() + bar.get_width()/2, bar.get_height() + 0.5,
+                    str(count), ha='center', va='bottom', fontweight='bold', fontsize=12)
+        
+        plt.title('Sentiment Analysis Results', fontsize=16, fontweight='bold')
+        plt.xlabel('Sentiment', fontsize=12)
+        plt.ylabel('Number of Comments', fontsize=12)
+        plt.grid(axis='y', alpha=0.3)
+        
+        img = io.BytesIO()
+        plt.savefig(img, format='png', bbox_inches='tight', dpi=150)
+        img.seek(0)
+        charts['bar_chart'] = base64.b64encode(img.getvalue()).decode('utf8')
+        plt.close()
+        
+        # 3. Engagement Analysis (if likes data available)
+        positive_likes = sum(int(comment.get('likes', 0)) for comment in all_comments 
+                           if comment['sentiment'] == 'positive')
+        negative_likes = sum(int(comment.get('likes', 0)) for comment in all_comments 
+                           if comment['sentiment'] == 'negative')
+        
+        if positive_likes > 0 or negative_likes > 0:
+            plt.figure(figsize=(10, 6))
+            engagement = ['Positive Comments', 'Negative Comments']
+            likes = [positive_likes, negative_likes]
+            bars = plt.bar(engagement, likes, color=['#4CAF50', '#f44336'], alpha=0.8)
+            
+            for bar, like_count in zip(bars, likes):
+                plt.text(bar.get_x() + bar.get_width()/2, bar.get_height() + max(likes) * 0.01,
+                        str(like_count), ha='center', va='bottom', fontweight='bold', fontsize=12)
+            
+            plt.title('Engagement by Sentiment (Total Likes)', fontsize=16, fontweight='bold')
+            plt.xlabel('Sentiment Category', fontsize=12)
+            plt.ylabel('Total Likes', fontsize=12)
+            plt.grid(axis='y', alpha=0.3)
+            
+            img = io.BytesIO()
+            plt.savefig(img, format='png', bbox_inches='tight', dpi=150)
+            img.seek(0)
+            charts['engagement_chart'] = base64.b64encode(img.getvalue()).decode('utf8')
+            plt.close()
+        
+        # 4. Comment Length Analysis
+        comment_lengths = [len(comment['comment'].split()) for comment in all_comments]
+        positive_lengths = [len(comment['comment'].split()) for comment in all_comments 
+                          if comment['sentiment'] == 'positive']
+        negative_lengths = [len(comment['comment'].split()) for comment in all_comments 
+                          if comment['sentiment'] == 'negative']
+        
+        plt.figure(figsize=(12, 6))
+        plt.hist([positive_lengths, negative_lengths], bins=20, alpha=0.7, 
+                label=['Positive Comments', 'Negative Comments'], 
+                color=['#4CAF50', '#f44336'])
+        plt.title('Comment Length Distribution by Sentiment', fontsize=16, fontweight='bold')
+        plt.xlabel('Number of Words', fontsize=12)
+        plt.ylabel('Number of Comments', fontsize=12)
+        plt.legend()
+        plt.grid(axis='y', alpha=0.3)
+        
+        img = io.BytesIO()
+        plt.savefig(img, format='png', bbox_inches='tight', dpi=150)
+        img.seek(0)
+        charts['length_chart'] = base64.b64encode(img.getvalue()).decode('utf8')
+        plt.close()
+    
+    # Calculate additional statistics
+    stats = {
+        'total_articles': len(article_links),
+        'total_comments': total_comments,
+        'avg_comments_per_article': round(total_comments / len(article_links), 2) if article_links else 0,
+        'avg_comment_length': round(sum(len(comment['comment'].split()) for comment in all_comments) / total_comments, 2) if total_comments > 0 else 0,
+        'most_positive_article': None,
+        'most_negative_article': None,
+        'engagement_rate': round((positive_likes + negative_likes) / total_comments, 2) if total_comments > 0 and 'positive_likes' in locals() else 0
+    }
+    # Generate AI sentiment report
     sentiment_report = generate_report(positive_percentage, negative_percentage)
+    
     # Generate the word cloud from all comments
     filtered_words = clean_and_tokenize_comments(all_comments, stop_words2)
     wordcloud_url = generate_wordcloud(filtered_words)
 
-    # Pass data to the template
+    # Pass comprehensive data to the template
     return render_template(
         'all_comments.html',
         sentiment_results=all_comments,
@@ -260,9 +345,11 @@ def all_comments():
         negative_count=negative_count,
         positive_percentage=positive_percentage,
         negative_percentage=negative_percentage,
-        chart_url=chart_url,
+        charts=charts,
+        stats=stats,
         sentiment_report=sentiment_report,
-        wordcloud_url=wordcloud_url
+        wordcloud_url=wordcloud_url,
+        total_comments=total_comments
     )
 
 
