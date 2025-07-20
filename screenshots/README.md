@@ -4,12 +4,9 @@ This directory contains UI screenshots for the README documentation.
 
 ## Required Screenshots:
 
-1. **homepage.png** - Main interface showing search form
-2. **search_results.png** - Article search results page
-3. **article_analysis.png** - Individual article sentiment analysis
-4. **sentiment_dashboard.png** - Aggregate analysis with charts
-5. **pie_chart.png** - Sentiment distribution pie chart
-6. **wordcloud.png** - Arabic word cloud visualization
+1. **home.png** - Main interface showing search form
+2. **search.png** - Article search results page
+4. **dash1.png** - Aggregate analysis with charts
 
 ## How to Add Screenshots:
 
