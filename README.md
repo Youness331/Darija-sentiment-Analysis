@@ -111,29 +111,19 @@ jupyter notebook "sentiments analysis/ml.ipynb"
 ## 🖥️ User Interface Screenshots
 
 ### Homepage
-![Homepage](screenshots/homepage.png)
+![Homepage](screenshots/home.png)
 *Main interface for entering search keywords and time range*
 
 ### Search Results
-![Search Results](screenshots/search_results.png)
+![Search Results](screenshots/results.png)
 *Display of scraped articles matching the search criteria*
 
-### Individual Article Analysis
-![Article Analysis](screenshots/article_analysis.png)
-*Sentiment analysis of comments for a specific article*
 
 ### Aggregate Sentiment Dashboard
-![Sentiment Dashboard](screenshots/sentiment_dashboard.png)
-*Comprehensive sentiment analysis with charts and word clouds*
 
-### Sentiment Distribution Chart
-![Pie Chart](screenshots/pie_chart.png)
-*Visual representation of positive vs negative sentiment distribution*
-
-### Word Cloud Visualization
-![Word Cloud](screenshots/wordcloud.png)
-*Most frequent words from analyzed comments*
-
+[dashboard](screenshots/dash1.png)
+[dashboard](screenshots/dash2.png)
+[dashboard](screenshots/dash3.png)
 ## 🔧 Core Features
 
 ### Web Scraping
