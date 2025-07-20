@@ -206,7 +206,3 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - **Author**: Youness
 - **GitHub**: [@Youness331](https://github.com/Youness331)
 - **Project Link**: [https://github.com/Youness331/Darija-sentiment-Analysis](https://github.com/Youness331/Darija-sentiment-Analysis)
-
----
-
-*Built with ❤️ for Arabic/Darija sentiment analysis*
