@@ -38,6 +38,10 @@ nltk.download('stopwords')
 
 from package import dynamic_scraper
 from package import scrape_comments
+# Import debug functions
+import sys
+sys.path.append('.')
+from debug_scraper import debug_comments_structure, scrape_comments_simple
 
 app = Flask(__name__)
 
