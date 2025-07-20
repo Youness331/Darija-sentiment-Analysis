@@ -200,9 +200,3 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - **Hespress.com** for providing Arabic news content
 - **Google Gemini API** for report generation
 - **Arabic NLP community** for stopwords and preprocessing techniques
-
-## 📞 Contact
-
-- **Author**: Youness
-- **GitHub**: [@Youness331](https://github.com/Youness331)
-- **Project Link**: [https://github.com/Youness331/Darija-sentiment-Analysis](https://github.com/Youness331/Darija-sentiment-Analysis)
