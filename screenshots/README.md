@@ -6,7 +6,12 @@ This directory contains UI screenshots for the README documentation.
 
 1. **home.png** - Main interface showing search form
 2. **search.png** - Article search results page
-4. **dash1.png** - Aggregate analysis with charts
+3. **dash1.png** - Aggregate analysis with charts
+
+## Current Status:
+- [ ] home.png - Homepage screenshot
+- [ ] search.png - Search results screenshot  
+- [ ] dash1.png - Dashboard screenshot
 
 ## How to Add Screenshots:
 
