@@ -121,31 +121,119 @@ def dynamic_scraper(interval_days, key_name, url):
 #fonction pour le scraping des commentaires
 def scrape_comments(article_link):
     try:
-        response = requests.get(article_link)
+        # Initialize WebDriver for dynamic content
+        chrome_options = webdriver.ChromeOptions()
+        chrome_options.add_argument('--headless')  # Run in background
+        chrome_options.add_argument('--no-sandbox')
+        chrome_options.add_argument('--disable-dev-shm-usage')
+        chrome_options.add_argument('--disable-gpu')
         
-        response.raise_for_status()  # Raise an error for bad responses (4xx and 5xx)
-    except requests.exceptions.HTTPError as http_err:
-        print(f"HTTP error occurred: {http_err}")  # Print the HTTP error
-        return []  # Return an empty list or handle the error as needed
-    except Exception as err:
-        print(f"Other error occurred: {err}")  # Print any other error
-        return []  # Return an empty list or handle the error as needed
-    #wait 3 secondes to request
-    time.sleep(3)
-    soup = BeautifulSoup(response.text, 'html.parser')
-
-    comments = soup.find_all('div', class_='comment-text')
-    likes = soup.find_all('span', class_='comment-recat-number')
-
-    comments_list = []
-    for i in range(len(comments)):
-        comment_text = comments[i].get_text(strip=True)
+        chrome_service = ChromeService(ChromeDriverManager().install())
+        driver = webdriver.Chrome(service=chrome_service, options=chrome_options)
+        
+        # Navigate to the article
+        driver.get(article_link)
+        print(f"Navigating to: {article_link}")
+        
+        # Wait for the page to load
+        time.sleep(8)
+        
+        # Scroll down slowly to trigger lazy loading
+        driver.execute_script("window.scrollTo(0, document.body.scrollHeight/2);")
+        time.sleep(2)
+        driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+        time.sleep(5)
+        
+        # Try multiple ways to load more comments
         try:
-            like_count = likes[i].get_text(strip=True)
-        except IndexError:
-            like_count = '0'
-        comments_list.append({'comment': comment_text, 'likes': like_count})
-    return comments_list
+            # Look for various "load more" button patterns
+            load_more_selectors = [
+                'load-more-comments',
+                'load-more',
+                'show-more-comments',
+                'voir-plus-commentaires',
+                'المزيد-من-التعليقات'
+            ]
+            
+            for selector in load_more_selectors:
+                try:
+                    load_more_button = driver.find_element(By.CLASS_NAME, selector)
+                    if load_more_button.is_displayed():
+                        driver.execute_script("arguments[0].click();", load_more_button)
+                        time.sleep(3)
+                        break
+                except:
+                    continue
+        except:
+            pass
+        
+        # Additional scroll to ensure all content is loaded
+        driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+        time.sleep(3)
+        
+        # Get page source after JavaScript execution
+        page_source = driver.page_source
+        soup = BeautifulSoup(page_source, 'html.parser')
+        driver.quit()
+        
+        print("Page source length:", len(page_source))
+        
+        # Debug: Save page source to file for inspection
+        with open('debug_page_source.html', 'w', encoding='utf-8') as f:
+            f.write(page_source)
+        print("Page source saved to debug_page_source.html")
+        
+        # Find comments using exact class names with debugging
+        print("Searching for comments...")
+        comments = soup.find_all('div', class_='comment-text')
+        print(f"Found {len(comments)} comments with exact class 'comment-text'")
+        
+        # If no comments, search for any div with comment in the class
+        if not comments:
+            all_comment_divs = soup.find_all('div', class_=lambda x: x and 'comment' in ' '.join(x).lower())
+            print(f"Found {len(all_comment_divs)} divs with 'comment' in class name")
+            comments = all_comment_divs
+            
+        # Print first few class names for debugging
+        for i, comment in enumerate(comments[:3]):
+            print(f"Comment {i+1} class: {comment.get('class')}")
+        
+        # Find likes using exact class names with debugging
+        print("Searching for likes...")
+        likes = soup.find_all('span', class_='comment-recat-number')
+        print(f"Found {len(likes)} likes with exact class 'comment-recat-number'")
+        
+        # If no likes, search more broadly
+        if not likes:
+            all_like_spans = soup.find_all('span', class_=lambda x: x and any(word in ' '.join(x).lower() for word in ['like', 'recat', 'heart']))
+            print(f"Found {len(all_like_spans)} spans with like-related classes")
+            likes = all_like_spans
+        
+        comments_list = []
+        for i in range(len(comments)):
+            comment_text = comments[i].get_text(strip=True)
+            if comment_text:  # Only add non-empty comments
+                try:
+                    like_count = likes[i].get_text(strip=True) if i < len(likes) else '0'
+                    # Clean like count (remove any non-numeric characters except numbers)
+                    like_count = re.sub(r'[^\d]', '', like_count) or '0'
+                except (IndexError, AttributeError):
+                    like_count = '0'
+                
+                comments_list.append({
+                    'comment': comment_text, 
+                    'likes': like_count
+                })
+        
+        print(f"Successfully extracted {len(comments_list)} comments")
+        return comments_list
+        
+    except requests.exceptions.HTTPError as http_err:
+        print(f"HTTP error occurred: {http_err}")
+        return []
+    except Exception as err:
+        print(f"Error scraping comments: {err}")
+        return []
 
 #fonction pour scraper les infos des articles
 def scrape_title_categorie_date_author_summary(link):
