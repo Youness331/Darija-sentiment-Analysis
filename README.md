@@ -108,22 +108,42 @@ The application will be available at `http://localhost:5000`
 jupyter notebook "sentiments analysis/ml.ipynb"
 ```
 
-## 🖥️ User Interface Screenshots
+## 📸 Screenshots & Demo
 
-### Homepage
-![Homepage](screenshots/home.png)
-*Main interface for entering search keywords and time range*
+### 🖥️ User Interface
 
-### Search Results
-![Search Results](screenshots/results.png)
-*Display of scraped articles matching the search criteria*
+> **Note**: For screenshot upload instructions, see [SCREENSHOTS_GUIDE.md](SCREENSHOTS_GUIDE.md)
 
+**Homepage Interface**
+```
+📍 Location: screenshots/home.png
+🎯 Shows: Modern search interface with Arabic support
+```
 
-### Aggregate Sentiment Dashboard
+**Search Results Page**
+```
+📍 Location: screenshots/search.png  
+🎯 Shows: Article scraping results with analysis options
+```
 
-[dashboard](screenshots/dash1.png)
-[dashboard](screenshots/dash2.png)
-[dashboard](screenshots/dash3.png)
+**Sentiment Analysis Dashboard**
+```
+📍 Location: screenshots/dash1.png
+🎯 Shows: Complete analytics dashboard with charts and insights
+```
+
+### 🚀 Live Demo Features
+
+The application provides:
+- **Real-time Article Scraping** from Hespress.com
+- **Advanced Sentiment Analysis** using DarijaBERT
+- **Interactive Visualizations** (pie charts, bar charts, histograms)
+- **AI-Generated Reports** in Arabic using Gemini API
+- **Arabic Word Clouds** with proper text rendering
+- **Responsive Design** for all screen sizes
+
+---
+
 ## 🔧 Core Features
 
 ### Web Scraping
