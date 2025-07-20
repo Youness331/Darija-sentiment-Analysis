@@ -103,19 +103,27 @@ def analyze_sentiment(comments):
 
     return results, top_5_words
 
+
 # Function to load stopwords from stopwords.csv
 def load_stopwords(file_path):
     all_stopwords = set()
-    with open(file_path, 'r', encoding='utf-8') as file:
+    with open(file_path, 'r', encoding='utf-16') as file:
         reader = csv.reader(file)
         for row in reader:
-            all_stopwords.add(row[0].strip())
-    arabic_stopwords=stop_words.words('arabic')
-    #union arabic with darija stopwords
-    all_stopwords= all_stopwords.union(arabic_stopwords)
+            if row:  # Check if row is not empty
+                all_stopwords.add(row[0].strip())
+    
+    # Import and get Arabic stopwords from NLTK
+    from nltk.corpus import stopwords
+    try:
+        arabic_stopwords = set(stopwords.words('arabic'))
+        # Union arabic with darija stopwords
+        all_stopwords = all_stopwords.union(arabic_stopwords)
+    except LookupError:
+        # If Arabic stopwords are not available, just use Darija ones
+        print("Arabic stopwords not found, using only Darija stopwords")
+    
     return all_stopwords
-
-
 
 
 # Configure the Gemini API
